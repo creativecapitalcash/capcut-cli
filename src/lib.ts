@@ -49,3 +49,5 @@ export type { RunCommandRequest, RunCommandResult } from "./runner.js";
 export { runCommand } from "./runner.js";
 export type { AppSource, VersionInfo } from "./version.js";
 export { detectVersion } from "./version.js";
+export type { RemoveWatermarkOptions, RemoveWatermarkResult, WatermarkRegion } from "./watermark.js";
+export { removeWatermark } from "./watermark.js";

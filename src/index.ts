@@ -93,6 +93,8 @@ import { diagnoseDraftStore, discoverDraftStore } from "./store.js";
 import { formatDuration, formatTime, parseTimeInput, srtTime } from "./time.js";
 import { translateDraft } from "./translate.js";
 import { detectVersion } from "./version.js";
+import type { WatermarkRegion } from "./watermark.js";
+import { removeWatermark } from "./watermark.js";
 
 export const COMMANDS = [
   "info",
@@ -164,6 +166,7 @@ export const COMMANDS = [
   "quickstart",
   "compile",
   "render",
+  "remove-watermark",
 ] as const;
 
 const HELP = `capcut-cli -- fast edits to CapCut projects
@@ -633,6 +636,9 @@ interface Flags {
   continueOnError?: boolean;
   check?: boolean;
   plan?: boolean;
+  platform?: string;
+  region?: string[];
+  crf?: number;
 }
 
 // Map CLI enum flags -> enums.json category key. Order matters for HELP text.
@@ -935,6 +941,13 @@ function parseFlags(args: string[]): { positional: string[]; flags: Flags } {
       flags.check = true;
     } else if (a === "--plan") {
       flags.plan = true;
+    } else if (a === "--platform" && i + 1 < args.length) {
+      flags.platform = args[++i];
+    } else if (a === "--region" && i + 1 < args.length) {
+      if (!flags.region) flags.region = [];
+      flags.region.push(args[++i]);
+    } else if (a === "--crf" && i + 1 < args.length) {
+      flags.crf = parseInt(args[++i], 10);
     } else {
       const hit = ENUM_FLAG_MAP.find((f) => f.flag === a);
       if (hit) {
@@ -2709,6 +2722,7 @@ const SUMMARIES: Record<string, string> = {
   init: "Create a new empty draft from a template.",
   compile: "Build a draft from a declarative JSON spec (the inverse of describe).",
   render: "Render a low-res ffmpeg proxy preview (trim+speed+audio, --burn-captions); not CapCut's final render.",
+  "remove-watermark": "Remove TikTok/platform watermarks from a video file using ffmpeg delogo filter.",
 };
 
 // `describe` emits a machine-readable tool spec for LLM/agent callers, so they
@@ -3112,6 +3126,42 @@ async function main(): Promise<void> {
   // `serve` reads jobs from stdin/queue file — no project needed.
   if (cmd === "serve") {
     await cmdServe(flags);
+    process.exit(0);
+  }
+
+  // `remove-watermark` operates on a raw video file — no project needed.
+  if (cmd === "remove-watermark") {
+    const inputFile = positional[1];
+    if (!inputFile)
+      die(
+        "Usage: capcut remove-watermark <file> [--out <output.mp4>] [--platform tiktok] [--region x,y,w,h[:start-end]]",
+      );
+    const regions: WatermarkRegion[] = [];
+    if (flags.region) {
+      for (const r of flags.region) {
+        const [coords, timeRange] = r.split(":");
+        const [rx, ry, rw, rh] = coords.split(",").map(Number);
+        if ([rx, ry, rw, rh].some((v) => Number.isNaN(v))) die(`Invalid region: ${r}. Expected x,y,w,h`);
+        const region: WatermarkRegion = { x: rx, y: ry, w: rw, h: rh };
+        if (timeRange) {
+          const [start, end] = timeRange.split("-").map(Number);
+          if (!Number.isNaN(start)) region.startTime = start;
+          if (!Number.isNaN(end)) region.endTime = end;
+        }
+        regions.push(region);
+      }
+    }
+    const result = removeWatermark({
+      input: path.resolve(inputFile),
+      out: flags.out ? path.resolve(flags.out) : undefined,
+      platform: (flags.platform as "tiktok" | "auto") ?? "tiktok",
+      regions: regions.length > 0 ? regions : undefined,
+      crf: flags.crf,
+      ffmpegCmd: flags.ffmpegCmd,
+      ffprobeCmd: flags.ffprobeCmd,
+      dryRun: flags.dryRun,
+    });
+    out(result, flags);
     process.exit(0);
   }
 

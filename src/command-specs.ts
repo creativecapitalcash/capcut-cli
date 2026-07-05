@@ -187,6 +187,7 @@ const usages = {
   quickstart: "capcut quickstart <name> [--video <f>] [--audio <f>] [--srt <f>] [--drafts <dir>]",
   compile: "capcut compile <spec.json> [--out <draftdir>] [--check | --plan]",
   render: "capcut render <project> [--out <preview.mp4>] [options]",
+  "remove-watermark": "capcut remove-watermark <file> [--out <output.mp4>] [options]",
 } as const satisfies Record<string, string>;
 
 export type CommandName = keyof typeof usages;
@@ -384,6 +385,17 @@ const optionsByCommand: Record<string, OptionSpec[]> = {
     option("burn_captions", ["--burn-captions"], "boolean", "Burn captions."),
     option("all_video_tracks", ["--all-video-tracks"], "boolean", "Composite every video track."),
   ],
+  "remove-watermark": [
+    OUT,
+    option("platform", ["--platform"], "enum", "Watermark platform.", {
+      values: ["tiktok", "auto"],
+      default: "tiktok",
+    }),
+    option("region", ["--region"], "string", "Manual region as x,y,w,h[:start-end]."),
+    option("crf", ["--crf"], "number", "Output quality (lower = better).", { default: 18 }),
+    option("ffmpeg_cmd", ["--ffmpeg-cmd"], "path", "FFmpeg binary."),
+    FFPROBE,
+  ],
 };
 optionsByCommand["image-anim"] = optionsByCommand["text-anim"];
 
@@ -436,7 +448,7 @@ const mutating = new Set([
 
 const arrayOutputs = new Set(["tracks", "segments", "texts", "materials", "enums", "templates"]);
 const textOutputs = new Set(["export-srt", "completions"]);
-const fileOutputs = new Set(["render", "translate", "compile", "cut", "save-template"]);
+const fileOutputs = new Set(["render", "translate", "compile", "cut", "save-template", "remove-watermark"]);
 
 function inferType(name: string): ArgumentType {
   if (/project|file|path|dir|template|audio|image|srt|ass|spec|draft/i.test(name)) return "path";
@@ -472,7 +484,8 @@ export function buildCommandSpecs(commands: readonly string[], summaries: Record
   return commands.map((name) => {
     const usage = usages[name as CommandName] ?? `capcut ${name} <project>`;
     const prerequisites: string[] = [];
-    if (name === "render") prerequisites.push("ffmpeg");
+    if (name === "render" || name === "remove-watermark") prerequisites.push("ffmpeg");
+    if (name === "remove-watermark") prerequisites.push("ffprobe");
     if (["add-video", "add-audio", "compile"].includes(name)) prerequisites.push("ffprobe (optional)");
     if (name === "caption") prerequisites.push("whisper CLI");
     if (name === "translate") prerequisites.push("ANTHROPIC_API_KEY or --api-key");
