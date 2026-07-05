@@ -1,0 +1,29 @@
+{
+  "name": "Momentum Rocket",
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "ratio": "9:16",
+  "tracks": [
+    {
+      "type": "video",
+      "items": [
+        {
+          "ref": "poster",
+          "path": "momentum-poster.png",
+          "start": 0,
+          "duration": 6,
+          "type": "photo",
+          "width": 864,
+          "height": 1212
+        }
+      ]
+    }
+  ],
+  "operations": [
+    { "op": "keyframe", "target": "poster", "property": "uniform_scale", "time": 0, "value": 1.0 },
+    { "op": "keyframe", "target": "poster", "property": "uniform_scale", "time": 6, "value": 1.15 },
+    { "op": "keyframe", "target": "poster", "property": "position_y", "time": 0, "value": 0.0 },
+    { "op": "keyframe", "target": "poster", "property": "position_y", "time": 6, "value": -0.08 }
+  ]
+}
