@@ -88,6 +88,16 @@ import { buildRenderPlan, renderDraft } from "./render.js";
 import { replaceMedia } from "./replace.js";
 import { serveQueue } from "./serve.js";
 import { addSfx } from "./sfx.js";
+import {
+  cmdSocialCalendar,
+  cmdSocialDaemon,
+  cmdSocialGenerate,
+  cmdSocialPost,
+  cmdSocialSchedule,
+  cmdSocialSetup,
+  cmdSocialStatus,
+  parseSocialFlags,
+} from "./social/commands.js";
 import { parseSrt } from "./srt.js";
 import { diagnoseDraftStore, discoverDraftStore } from "./store.js";
 import { formatDuration, formatTime, parseTimeInput, srtTime } from "./time.js";
@@ -164,6 +174,13 @@ export const COMMANDS = [
   "quickstart",
   "compile",
   "render",
+  "social-setup",
+  "social-generate",
+  "social-calendar",
+  "social-schedule",
+  "social-post",
+  "social-status",
+  "social-daemon",
 ] as const;
 
 const HELP = `capcut-cli -- fast edits to CapCut projects
@@ -487,6 +504,28 @@ Full viral-shorts pipeline (Claude skill + hooks + templates):
   https://renezander.gumroad.com/l/viral-youtube-shorts-blueprint
 Guides & docs:  https://renezander.com/guides/capcut-automation
 Sponsor:        https://github.com/sponsors/renezander030
+Social content scheduler:
+  social-setup                   Brand voice interview + API key + platform config
+  social-generate [options]      Generate AI content (text + optional image)
+    --platform <p>               Platform: twitter/x, instagram/ig, linkedin/li, facebook/fb
+    --topic <t>                  Topic to post about
+    --with-image                 Generate an image with Pollinations.ai (free)
+    --count <n>                  Number of posts to generate (default 1)
+    --api-key <key>              Override ANTHROPIC_API_KEY
+    --model <id>                 Claude model (default: claude-haiku-4-5-20251001)
+  social-calendar [options]      View/manage the content calendar
+    --days <n>                   Show upcoming N days (default 7)
+    --status <s>                 Filter by status: draft/scheduled/posted/failed
+    --delete <id>                Delete a post by ID prefix
+  social-schedule <text> --platform <p> --at <datetime>
+  social-schedule --id <id> --at <datetime>
+                                 Schedule a post for a specific date/time
+  social-post --id <id>          Post one entry via headless browser (Playwright)
+  social-post --all-due          Post all due scheduled content
+  social-post --login --platform <p>   Log in to a platform (saves session)
+  social-status                  Dashboard: post counts, upcoming, past-due
+  social-daemon [--interval <s>] Run scheduler loop (default 60s check interval)
+
 Hire me:        https://renezander.com/contact`;
 
 // --- Flag parsing ---
@@ -2709,6 +2748,13 @@ const SUMMARIES: Record<string, string> = {
   init: "Create a new empty draft from a template.",
   compile: "Build a draft from a declarative JSON spec (the inverse of describe).",
   render: "Render a low-res ffmpeg proxy preview (trim+speed+audio, --burn-captions); not CapCut's final render.",
+  "social-setup": "Brand voice interview + API key + platform configuration for social scheduling.",
+  "social-generate": "Generate AI social media posts (Claude text + Pollinations.ai images).",
+  "social-calendar": "View, filter, or delete entries in the content calendar.",
+  "social-schedule": "Schedule a draft post or inline text for a specific date/time.",
+  "social-post": "Post content via headless browser (Playwright); login or post due entries.",
+  "social-status": "Dashboard showing post counts, upcoming schedule, and brand config.",
+  "social-daemon": "Run a background loop that auto-posts scheduled content when due.",
 };
 
 // `describe` emits a machine-readable tool spec for LLM/agent callers, so they
@@ -3199,6 +3245,43 @@ async function main(): Promise<void> {
   // `compile` builds a brand-new draft from a declarative spec — no existing project.
   if (cmd === "compile") {
     cmdCompile(positional, flags);
+    process.exit(0);
+  }
+
+  // Social content scheduler commands — no CapCut project needed.
+  if (cmd?.startsWith("social-")) {
+    const { positional: sp, flags: sf } = parseSocialFlags(process.argv.slice(3));
+    // Carry over global flags
+    if (flags.human) sf.human = true;
+    if (flags.quiet) sf.quiet = true;
+    if (flags.apiKey) sf.apiKey = flags.apiKey;
+    if (flags.model) sf.model = flags.model;
+
+    switch (cmd) {
+      case "social-setup":
+        await cmdSocialSetup(sf);
+        break;
+      case "social-generate":
+        await cmdSocialGenerate(sp, sf);
+        break;
+      case "social-calendar":
+        cmdSocialCalendar(sf);
+        break;
+      case "social-schedule":
+        cmdSocialSchedule(sp, sf);
+        break;
+      case "social-post":
+        await cmdSocialPost(sp, sf);
+        break;
+      case "social-status":
+        cmdSocialStatus(sf);
+        break;
+      case "social-daemon":
+        await cmdSocialDaemon(sf);
+        break;
+      default:
+        die(`Unknown social command: ${cmd}`);
+    }
     process.exit(0);
   }
 
