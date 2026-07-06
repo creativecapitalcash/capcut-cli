@@ -1,0 +1,242 @@
+{
+  "name": "Selfie Stick - Scroll Stopper",
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "ratio": "9:16",
+  "tracks": [
+    {
+      "type": "video",
+      "name": "visuals",
+      "items": [
+        {
+          "ref": "slide1",
+          "path": "media/product-hero.jpg",
+          "type": "photo",
+          "start": 0,
+          "duration": 2.5,
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "ref": "slide2",
+          "path": "media/product-main.jpg",
+          "type": "photo",
+          "start": 2.5,
+          "duration": 3,
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "ref": "slide3",
+          "path": "media/product-compact.jpg",
+          "type": "photo",
+          "start": 5.5,
+          "duration": 3,
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "ref": "slide4",
+          "path": "media/product-features.jpg",
+          "type": "photo",
+          "start": 8.5,
+          "duration": 3,
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "ref": "slide5",
+          "path": "media/product-stability.jpg",
+          "type": "photo",
+          "start": 11.5,
+          "duration": 3,
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "ref": "slide6",
+          "path": "media/product-hero.jpg",
+          "type": "photo",
+          "start": 14.5,
+          "duration": 2.5,
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "ref": "slide7",
+          "path": "media/product-main.jpg",
+          "type": "photo",
+          "start": 17,
+          "duration": 3,
+          "width": 1080,
+          "height": 1920
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "hooks",
+      "items": [
+        {
+          "ref": "hook1",
+          "text": "WAIT.",
+          "start": 0,
+          "duration": 1,
+          "fontSize": 32,
+          "color": "#FFFFFF",
+          "y": 0.15
+        },
+        {
+          "ref": "hook2",
+          "text": "This is $15.",
+          "start": 1,
+          "duration": 1.5,
+          "fontSize": 28,
+          "color": "#00FF88",
+          "y": 0.15
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "feature-titles",
+      "items": [
+        {
+          "ref": "feat1",
+          "text": "4-IN-1 MAGNETIC SELFIE STICK",
+          "start": 2.5,
+          "duration": 3,
+          "fontSize": 18,
+          "color": "#FFD700",
+          "y": -0.72
+        },
+        {
+          "ref": "feat2",
+          "text": "FITS IN YOUR POCKET | 11CM | 112G",
+          "start": 5.5,
+          "duration": 3,
+          "fontSize": 16,
+          "color": "#00FFFF",
+          "y": -0.72
+        },
+        {
+          "ref": "feat3",
+          "text": "6 UPGRADES. ZERO EXCUSES.",
+          "start": 8.5,
+          "duration": 3,
+          "fontSize": 18,
+          "color": "#FF6B35",
+          "y": -0.72
+        },
+        {
+          "ref": "feat4",
+          "text": "ROCK SOLID | 4-LEG KEEL SUPPORT",
+          "start": 11.5,
+          "duration": 3,
+          "fontSize": 18,
+          "color": "#00FF88",
+          "y": -0.72
+        },
+        {
+          "ref": "feat5",
+          "text": "4.7 STARS | 597+ SOLD",
+          "start": 14.5,
+          "duration": 2.5,
+          "fontSize": 20,
+          "color": "#FFD700",
+          "y": -0.72
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "cta-track",
+      "items": [
+        {
+          "ref": "cta",
+          "text": "35% OFF - LINK IN BIO",
+          "start": 17,
+          "duration": 3,
+          "fontSize": 24,
+          "color": "#FF3B1F",
+          "y": -0.65
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "price-badge",
+      "items": [
+        {
+          "ref": "price",
+          "text": "$14.99",
+          "start": 2.5,
+          "duration": 14.5,
+          "fontSize": 12,
+          "color": "#00FF88",
+          "x": 0.55,
+          "y": 0.82
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "strikethrough-price",
+      "items": [
+        {
+          "ref": "oldprice",
+          "text": "$22.99",
+          "start": 2.5,
+          "duration": 14.5,
+          "fontSize": 9,
+          "color": "#999999",
+          "x": 0.55,
+          "y": 0.75
+        }
+      ]
+    }
+  ],
+  "operations": [
+    { "op": "transition", "target": "slide2", "slug": "white-flash", "duration": 0.3 },
+    { "op": "transition", "target": "slide3", "slug": "dissolve", "duration": 0.4 },
+    { "op": "transition", "target": "slide4", "slug": "white-flash", "duration": 0.3 },
+    { "op": "transition", "target": "slide5", "slug": "dissolve", "duration": 0.4 },
+    { "op": "transition", "target": "slide6", "slug": "white-flash", "duration": 0.3 },
+    { "op": "transition", "target": "slide7", "slug": "flash", "duration": 0.25 },
+
+    { "op": "keyframe", "target": "slide1", "property": "uniform_scale", "time": 0, "value": 1.0 },
+    { "op": "keyframe", "target": "slide1", "property": "uniform_scale", "time": 2.5, "value": 1.15 },
+
+    { "op": "keyframe", "target": "slide2", "property": "uniform_scale", "time": 0, "value": 1.1 },
+    { "op": "keyframe", "target": "slide2", "property": "uniform_scale", "time": 3, "value": 1.0 },
+
+    { "op": "keyframe", "target": "slide3", "property": "uniform_scale", "time": 0, "value": 1.0 },
+    { "op": "keyframe", "target": "slide3", "property": "uniform_scale", "time": 3, "value": 1.12 },
+
+    { "op": "keyframe", "target": "slide4", "property": "uniform_scale", "time": 0, "value": 1.08 },
+    { "op": "keyframe", "target": "slide4", "property": "uniform_scale", "time": 3, "value": 1.0 },
+
+    { "op": "keyframe", "target": "slide5", "property": "uniform_scale", "time": 0, "value": 1.0 },
+    { "op": "keyframe", "target": "slide5", "property": "uniform_scale", "time": 3, "value": 1.15 },
+
+    { "op": "keyframe", "target": "slide6", "property": "uniform_scale", "time": 0, "value": 1.12 },
+    { "op": "keyframe", "target": "slide6", "property": "uniform_scale", "time": 2.5, "value": 1.0 },
+
+    { "op": "keyframe", "target": "slide7", "property": "uniform_scale", "time": 0, "value": 1.0 },
+    { "op": "keyframe", "target": "slide7", "property": "uniform_scale", "time": 3, "value": 1.2 },
+
+    { "op": "text-style", "target": "hook1", "style": { "bold": true, "hasShadow": true, "shadowDistance": 12, "shadowAlpha": 0.9, "borderWidth": 0.09, "borderColor": "#000000", "hasBorder": true } },
+    { "op": "text-style", "target": "hook2", "style": { "bold": true, "hasShadow": true, "shadowDistance": 12, "shadowAlpha": 0.9, "borderWidth": 0.09, "borderColor": "#000000", "hasBorder": true } },
+
+    { "op": "text-style", "target": "feat1", "style": { "bold": true, "hasShadow": true, "shadowDistance": 8, "shadowAlpha": 0.85, "borderWidth": 0.07, "borderColor": "#000000", "hasBorder": true } },
+    { "op": "text-style", "target": "feat2", "style": { "bold": true, "hasShadow": true, "shadowDistance": 8, "shadowAlpha": 0.85, "borderWidth": 0.07, "borderColor": "#000000", "hasBorder": true } },
+    { "op": "text-style", "target": "feat3", "style": { "bold": true, "hasShadow": true, "shadowDistance": 8, "shadowAlpha": 0.85, "borderWidth": 0.07, "borderColor": "#000000", "hasBorder": true } },
+    { "op": "text-style", "target": "feat4", "style": { "bold": true, "hasShadow": true, "shadowDistance": 8, "shadowAlpha": 0.85, "borderWidth": 0.07, "borderColor": "#000000", "hasBorder": true } },
+    { "op": "text-style", "target": "feat5", "style": { "bold": true, "hasShadow": true, "shadowDistance": 8, "shadowAlpha": 0.85, "borderWidth": 0.07, "borderColor": "#000000", "hasBorder": true } },
+
+    { "op": "text-style", "target": "cta", "style": { "bold": true, "hasShadow": true, "shadowDistance": 10, "shadowAlpha": 0.9, "borderWidth": 0.09, "borderColor": "#FFFFFF", "hasBorder": true } },
+
+    { "op": "text-style", "target": "price", "style": { "bold": true, "hasShadow": true, "shadowDistance": 6, "shadowAlpha": 0.8, "borderWidth": 0.06, "borderColor": "#000000", "hasBorder": true } }
+  ]
+}
