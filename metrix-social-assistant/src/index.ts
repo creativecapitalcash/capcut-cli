@@ -22,8 +22,9 @@ Commands:
     --topic <t>                  Topic to post about
     --with-image                 Generate an image with Pollinations.ai (free)
     --count <n>                  Number of posts to generate (default 1)
-    --api-key <key>              Override ANTHROPIC_API_KEY env var
-    --model <id>                 Claude model (default: claude-haiku-4-5-20251001)
+    --api-key <key>              Anthropic API key (or set ANTHROPIC_API_KEY)
+    --openrouter-key <key>       OpenRouter API key (or set OPENROUTER_API_KEY)
+    --model <id>                 Model ID (default: claude-haiku-4-5-20251001)
   calendar [options]             View/manage the content calendar
     --days <n>                   Show upcoming N days (default 7)
     --status <s>                 Filter by status: draft/scheduled/posted/failed
@@ -51,7 +52,7 @@ Quickstart:
   metrix daemon                  # auto-post on schedule
 
 Data directory: ~/.social-scheduler/
-Text generation: Claude (Anthropic API - requires ANTHROPIC_API_KEY)
+Text generation: Claude via Anthropic API or OpenRouter (set ANTHROPIC_API_KEY or OPENROUTER_API_KEY)
 Image generation: Pollinations.ai (free, no API key)
 Posting: Playwright headless browser (npm install playwright)
 `;

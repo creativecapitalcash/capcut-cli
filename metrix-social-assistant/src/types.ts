@@ -23,9 +23,13 @@ export interface ContentPost {
   error?: string;
 }
 
+export type LlmProvider = "anthropic" | "openrouter";
+
 export interface SocialConfig {
   brandVoice?: BrandVoice;
   anthropicApiKey?: string;
+  openRouterApiKey?: string;
+  llmProvider?: LlmProvider;
   credentials: Partial<Record<SocialPlatform, { profileUrl: string }>>;
   defaultPlatforms: SocialPlatform[];
 }

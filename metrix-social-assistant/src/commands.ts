@@ -12,7 +12,7 @@ import { askProfileUrls, choosePlatforms, runBrandInterview } from "./interview.
 import { loginFlow, postContent } from "./poster.js";
 import { runSchedulerLoop } from "./scheduler.js";
 import { loadCalendar, loadConfig, saveCalendar, saveConfig, uuid } from "./store.js";
-import type { ContentPost, SocialPlatform } from "./types.js";
+import type { ContentPost, LlmProvider, SocialPlatform } from "./types.js";
 import { ALL_PLATFORMS, PLATFORM_LABELS } from "./types.js";
 
 interface SocialFlags {
@@ -23,6 +23,7 @@ interface SocialFlags {
   withImage?: boolean;
   count?: number;
   apiKey?: string;
+  openRouterKey?: string;
   model?: string;
   days?: number;
   statusFilter?: string;
@@ -44,12 +45,19 @@ function die(msg: string): never {
   process.exit(1);
 }
 
-function requireApiKey(flags: SocialFlags): string {
+function resolveApiConfig(flags: SocialFlags): { apiKey: string; provider: LlmProvider } {
+  const orKey = flags.openRouterKey ?? process.env.OPENROUTER_API_KEY;
+  if (orKey) return { apiKey: orKey, provider: "openrouter" };
+
   const key = flags.apiKey ?? process.env.ANTHROPIC_API_KEY;
-  if (!key) {
-    die("Missing API key. Set ANTHROPIC_API_KEY or pass --api-key.\n" + "  Get one at https://console.anthropic.com/");
-  }
-  return key;
+  if (key) return { apiKey: key, provider: "anthropic" };
+
+  die(
+    "Missing API key. Set one of:\n" +
+      "  ANTHROPIC_API_KEY   or --api-key        (Anthropic direct)\n" +
+      "  OPENROUTER_API_KEY  or --openrouter-key  (OpenRouter)\n" +
+      "  Get keys at https://console.anthropic.com/ or https://openrouter.ai/keys",
+  );
 }
 
 function parsePlatform(s: string): SocialPlatform {
@@ -60,6 +68,7 @@ function parsePlatform(s: string): SocialPlatform {
   die(`Unknown platform: ${s}. Valid: ${ALL_PLATFORMS.join(", ")} (or x, ig, li, fb)`);
 }
 
+// --- social-setup ---
 export async function cmdSocialSetup(flags: SocialFlags): Promise<void> {
   const config = loadConfig();
 
@@ -74,8 +83,14 @@ export async function cmdSocialSetup(flags: SocialFlags): Promise<void> {
   const credentials = await askProfileUrls(platforms);
   config.credentials = { ...config.credentials, ...credentials };
 
-  const apiKey = flags.apiKey ?? process.env.ANTHROPIC_API_KEY;
-  if (apiKey) config.anthropicApiKey = apiKey;
+  const orKey = flags.openRouterKey ?? process.env.OPENROUTER_API_KEY;
+  const antKey = flags.apiKey ?? process.env.ANTHROPIC_API_KEY;
+  if (orKey) {
+    config.openRouterApiKey = orKey;
+    config.llmProvider = "openrouter";
+  }
+  if (antKey) config.anthropicApiKey = antKey;
+  if (!config.llmProvider && antKey) config.llmProvider = "anthropic";
 
   saveConfig(config);
 
@@ -90,11 +105,12 @@ export async function cmdSocialSetup(flags: SocialFlags): Promise<void> {
   }
 }
 
+// --- social-generate ---
 export async function cmdSocialGenerate(positional: string[], flags: SocialFlags): Promise<void> {
   const config = loadConfig();
   if (!config.brandVoice) die("No brand voice configured. Run: metrix setup");
 
-  const apiKey = requireApiKey(flags);
+  const { apiKey, provider } = resolveApiConfig(flags);
   const count = flags.count ?? 1;
 
   const platforms: SocialPlatform[] = flags.platform
@@ -118,6 +134,7 @@ export async function cmdSocialGenerate(positional: string[], flags: SocialFlags
         topic: flags.topic ?? positional[0],
         apiKey,
         model: flags.model,
+        provider,
       });
 
       let imagePath: string | undefined;
@@ -129,6 +146,7 @@ export async function cmdSocialGenerate(positional: string[], flags: SocialFlags
           brandVoice: config.brandVoice,
           postText: text,
           apiKey,
+          provider,
         });
 
         process.stderr.write(`  Generating image: "${imagePrompt.slice(0, 60)}..."\n`);
@@ -170,6 +188,7 @@ export async function cmdSocialGenerate(positional: string[], flags: SocialFlags
   }
 }
 
+// --- social-calendar ---
 export function cmdSocialCalendar(flags: SocialFlags): void {
   const calendar = loadCalendar();
 
@@ -201,6 +220,7 @@ export function cmdSocialCalendar(flags: SocialFlags): void {
   }
 }
 
+// --- social-schedule ---
 export function cmdSocialSchedule(positional: string[], flags: SocialFlags): void {
   const calendar = loadCalendar();
 
@@ -226,6 +246,7 @@ export function cmdSocialSchedule(positional: string[], flags: SocialFlags): voi
     return;
   }
 
+  // Inline scheduling: social-schedule "text" --platform twitter --at "..."
   const text = positional[0];
   if (!text) die("Provide post text or --id. Usage: metrix schedule <text> --platform <p> --at <datetime>");
   if (!flags.platform) die("Missing --platform");
@@ -256,6 +277,7 @@ export function cmdSocialSchedule(positional: string[], flags: SocialFlags): voi
   }
 }
 
+// --- social-post ---
 export async function cmdSocialPost(positional: string[], flags: SocialFlags): Promise<void> {
   if (flags.login) {
     if (!flags.platform) die("Missing --platform for login.");
@@ -313,6 +335,7 @@ export async function cmdSocialPost(positional: string[], flags: SocialFlags): P
   }
 }
 
+// --- social-status ---
 export function cmdSocialStatus(flags: SocialFlags): void {
   const config = loadConfig();
   const calendar = loadCalendar();
@@ -365,11 +388,13 @@ export function cmdSocialStatus(flags: SocialFlags): void {
   }
 }
 
+// --- social-daemon ---
 export async function cmdSocialDaemon(flags: SocialFlags): Promise<void> {
   const intervalMs = (flags.interval ?? 60) * 1000;
   await runSchedulerLoop(intervalMs);
 }
 
+// --- Flag parsing for social commands ---
 export function parseSocialFlags(args: string[]): { positional: string[]; flags: SocialFlags } {
   const positional: string[] = [];
   const flags: SocialFlags = { human: false, quiet: false };
@@ -399,6 +424,9 @@ export function parseSocialFlags(args: string[]): { positional: string[]; flags:
         break;
       case "--api-key":
         flags.apiKey = args[++i];
+        break;
+      case "--openrouter-key":
+        flags.openRouterKey = args[++i];
         break;
       case "--model":
         flags.model = args[++i];
