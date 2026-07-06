@@ -1,3 +1,4 @@
+import { authenticatePlatform } from "./automation/shared.js";
 import {
   addToCalendar,
   calendarStats,
@@ -12,8 +13,8 @@ import { askProfileUrls, choosePlatforms, runBrandInterview } from "./interview.
 import { loginFlow, postContent } from "./poster.js";
 import { runSchedulerLoop } from "./scheduler.js";
 import { loadCalendar, loadConfig, saveCalendar, saveConfig, uuid } from "./store.js";
-import type { ContentPost, SocialPlatform } from "./types.js";
-import { ALL_PLATFORMS, PLATFORM_LABELS } from "./types.js";
+import type { AutomationPlatform, ContentPost, SocialPlatform } from "./types.js";
+import { ALL_AUTOMATION_PLATFORMS, ALL_PLATFORMS, AUTOMATION_PLATFORM_LABELS, PLATFORM_LABELS } from "./types.js";
 
 interface SocialFlags {
   human: boolean;
@@ -369,6 +370,74 @@ export function cmdSocialStatus(flags: SocialFlags): void {
     }
   } else {
     out(status, flags);
+  }
+}
+
+// --- connect / connect-all ---
+function parseAutomationPlatform(s: string): AutomationPlatform {
+  const lower = s.toLowerCase();
+  if (ALL_AUTOMATION_PLATFORMS.includes(lower as AutomationPlatform)) return lower as AutomationPlatform;
+  const aliases: Record<string, AutomationPlatform> = {
+    x: "facebook",
+    ig: "instagram",
+    li: "linkedin",
+    fb: "facebook",
+    tt: "tiktok",
+    yt: "youtube",
+    pin: "pinterest",
+  };
+  if (aliases[lower]) return aliases[lower];
+  die(`Unknown platform: ${s}. Valid: ${ALL_AUTOMATION_PLATFORMS.join(", ")}`);
+}
+
+export async function cmdConnect(positional: string[], flags: SocialFlags): Promise<void> {
+  const platformArg = flags.platform ?? positional[0];
+  if (!platformArg) die("Specify a platform. Usage: metrix connect --platform <name>");
+  const platform = parseAutomationPlatform(platformArg);
+
+  process.stderr.write(`\nConnecting to ${AUTOMATION_PLATFORM_LABELS[platform]}...\n`);
+  await authenticatePlatform(platform);
+
+  if (flags.human) {
+    process.stderr.write(`\n${AUTOMATION_PLATFORM_LABELS[platform]} connected successfully.\n`);
+  } else {
+    out({ ok: true, platform }, flags);
+  }
+}
+
+export async function cmdConnectAll(flags: SocialFlags): Promise<void> {
+  process.stderr.write("\nMetrix Connect-All: Authenticate with all supported platforms\n");
+  process.stderr.write("=".repeat(60) + "\n");
+  process.stderr.write("Sessions are saved to ~/.metrix-assistant/sessions/\n\n");
+
+  const results: Array<{ platform: AutomationPlatform; ok: boolean; error?: string }> = [];
+
+  for (const platform of ALL_AUTOMATION_PLATFORMS) {
+    process.stderr.write(
+      `\n[${results.length + 1}/${ALL_AUTOMATION_PLATFORMS.length}] ${AUTOMATION_PLATFORM_LABELS[platform]}\n`,
+    );
+    try {
+      await authenticatePlatform(platform);
+      results.push({ platform, ok: true });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      process.stderr.write(`  Failed: ${msg}\n`);
+      results.push({ platform, ok: false, error: msg });
+    }
+  }
+
+  const succeeded = results.filter((r) => r.ok).length;
+  const failed = results.filter((r) => !r.ok).length;
+
+  if (flags.human) {
+    process.stderr.write(`\n${"=".repeat(60)}\n`);
+    process.stderr.write(`Done: ${succeeded} connected, ${failed} failed\n`);
+    for (const r of results) {
+      const icon = r.ok ? "+" : "-";
+      process.stderr.write(`  [${icon}] ${AUTOMATION_PLATFORM_LABELS[r.platform]}${r.error ? ` (${r.error})` : ""}\n`);
+    }
+  } else {
+    out({ ok: failed === 0, succeeded, failed, results }, flags);
   }
 }
 

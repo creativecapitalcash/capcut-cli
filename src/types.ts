@@ -1,5 +1,37 @@
 export type SocialPlatform = "twitter" | "instagram" | "linkedin" | "facebook";
 
+export type AutomationPlatform = "facebook" | "instagram" | "tiktok" | "youtube" | "threads" | "pinterest" | "linkedin";
+
+export const ALL_AUTOMATION_PLATFORMS: AutomationPlatform[] = [
+  "facebook",
+  "instagram",
+  "tiktok",
+  "youtube",
+  "threads",
+  "pinterest",
+  "linkedin",
+];
+
+export const AUTOMATION_PLATFORM_LABELS: Record<AutomationPlatform, string> = {
+  facebook: "Facebook",
+  instagram: "Instagram",
+  tiktok: "TikTok",
+  youtube: "YouTube",
+  threads: "Threads",
+  pinterest: "Pinterest",
+  linkedin: "LinkedIn",
+};
+
+export const AUTOMATION_LOGIN_URLS: Record<AutomationPlatform, string> = {
+  facebook: "https://www.facebook.com/login",
+  instagram: "https://www.instagram.com/accounts/login/",
+  tiktok: "https://www.tiktok.com/login",
+  youtube: "https://accounts.google.com/ServiceLogin?service=youtube",
+  threads: "https://www.threads.net/login",
+  pinterest: "https://www.pinterest.com/login/",
+  linkedin: "https://www.linkedin.com/login",
+};
+
 export interface BrandVoice {
   tone: string;
   audience: string;

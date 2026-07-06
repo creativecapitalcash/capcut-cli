@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import {
+  cmdConnect,
+  cmdConnectAll,
   cmdSocialCalendar,
   cmdSocialDaemon,
   cmdSocialGenerate,
@@ -34,6 +36,10 @@ Commands:
   post --id <id>                 Post one entry via headless browser (Playwright)
   post --all-due                 Post all due scheduled content
   post --login --platform <p>    Log in to a platform (saves session)
+  connect --platform <p>         Authenticate a single platform via browser
+  connect-all                    Authenticate all 7 platforms sequentially
+    Platforms: facebook, instagram, tiktok, youtube, threads, pinterest, linkedin
+    Sessions saved to: ~/.metrix-assistant/sessions/
   status                         Dashboard: post counts, upcoming, past-due
   daemon [--interval <s>]        Run scheduler loop (default 60s check interval)
 
@@ -47,6 +53,7 @@ Quickstart:
   metrix setup                   # interview + configure
   metrix generate -H             # create content with AI
   metrix schedule --id <id> --at "2025-12-25 14:00"
+  metrix connect-all             # authenticate all platforms
   metrix post --login --platform twitter
   metrix daemon                  # auto-post on schedule
 
@@ -92,6 +99,12 @@ async function main(): Promise<void> {
       break;
     case "post":
       await cmdSocialPost(positional, flags);
+      break;
+    case "connect":
+      await cmdConnect(positional, flags);
+      break;
+    case "connect-all":
+      await cmdConnectAll(flags);
       break;
     case "status":
       cmdSocialStatus(flags);
