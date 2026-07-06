@@ -9,10 +9,9 @@ const CONFIG_FILE = join(DATA_DIR, "config.json");
 const CALENDAR_FILE = join(DATA_DIR, "calendar.json");
 const IMAGES_DIR = join(DATA_DIR, "images");
 const AUTH_DIR = join(DATA_DIR, "auth");
-const SESSIONS_DIR = join(homedir(), ".metrix-assistant", "sessions");
 
 export function ensureDataDir(): void {
-  for (const d of [DATA_DIR, IMAGES_DIR, AUTH_DIR, SESSIONS_DIR]) {
+  for (const d of [DATA_DIR, IMAGES_DIR, AUTH_DIR]) {
     mkdirSync(d, { recursive: true });
   }
 }
@@ -53,11 +52,6 @@ export function loadCalendar(): ContentCalendar {
 export function saveCalendar(calendar: ContentCalendar): void {
   ensureDataDir();
   writeFileSync(CALENDAR_FILE, JSON.stringify(calendar, null, 2), "utf-8");
-}
-
-export function sessionsDir(): string {
-  ensureDataDir();
-  return SESSIONS_DIR;
 }
 
 export function uuid(): string {

@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
 import {
-  cmdConnect,
-  cmdConnectAll,
   cmdSocialCalendar,
   cmdSocialDaemon,
   cmdSocialGenerate,
@@ -24,8 +22,9 @@ Commands:
     --topic <t>                  Topic to post about
     --with-image                 Generate an image with Pollinations.ai (free)
     --count <n>                  Number of posts to generate (default 1)
-    --api-key <key>              OpenRouter API key (or set OPENROUTER_API_KEY)
-    --model <id>                 Model ID (default: anthropic/claude-haiku-4-5-20251001)
+    --api-key <key>              Anthropic API key (or set ANTHROPIC_API_KEY)
+    --openrouter-key <key>       OpenRouter API key (or set OPENROUTER_API_KEY)
+    --model <id>                 Model ID (default: claude-haiku-4-5-20251001)
   calendar [options]             View/manage the content calendar
     --days <n>                   Show upcoming N days (default 7)
     --status <s>                 Filter by status: draft/scheduled/posted/failed
@@ -36,10 +35,6 @@ Commands:
   post --id <id>                 Post one entry via headless browser (Playwright)
   post --all-due                 Post all due scheduled content
   post --login --platform <p>    Log in to a platform (saves session)
-  connect --platform <p>         Authenticate a single platform via browser
-  connect-all                    Authenticate all 7 platforms sequentially
-    Platforms: facebook, instagram, tiktok, youtube, threads, pinterest, linkedin
-    Sessions saved to: ~/.metrix-assistant/sessions/
   status                         Dashboard: post counts, upcoming, past-due
   daemon [--interval <s>]        Run scheduler loop (default 60s check interval)
 
@@ -53,12 +48,11 @@ Quickstart:
   metrix setup                   # interview + configure
   metrix generate -H             # create content with AI
   metrix schedule --id <id> --at "2025-12-25 14:00"
-  metrix connect-all             # authenticate all platforms
   metrix post --login --platform twitter
   metrix daemon                  # auto-post on schedule
 
 Data directory: ~/.social-scheduler/
-Text generation: OpenRouter API (set OPENROUTER_API_KEY or pass --api-key)
+Text generation: Claude via Anthropic API or OpenRouter (set ANTHROPIC_API_KEY or OPENROUTER_API_KEY)
 Image generation: Pollinations.ai (free, no API key)
 Posting: Playwright headless browser (npm install playwright)
 `;
@@ -99,12 +93,6 @@ async function main(): Promise<void> {
       break;
     case "post":
       await cmdSocialPost(positional, flags);
-      break;
-    case "connect":
-      await cmdConnect(positional, flags);
-      break;
-    case "connect-all":
-      await cmdConnectAll(flags);
       break;
     case "status":
       cmdSocialStatus(flags);

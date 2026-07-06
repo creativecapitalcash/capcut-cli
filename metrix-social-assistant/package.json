@@ -1,0 +1,42 @@
+{
+  "name": "metrix-social-assistant",
+  "version": "0.1.0",
+  "description": "Free AI-powered social media content creation and scheduling tool. Brand voice interview, Claude-generated posts, Pollinations.ai images, Playwright-based auto-posting.",
+  "type": "module",
+  "bin": {
+    "metrix": "dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "node --import tsx src/index.ts",
+    "start": "node dist/index.js",
+    "test": "npm run build && node --test --test-reporter=spec"
+  },
+  "keywords": [
+    "social-media",
+    "content-scheduler",
+    "ai-content",
+    "brand-voice",
+    "social-posting",
+    "claude",
+    "pollinations",
+    "playwright",
+    "twitter",
+    "instagram",
+    "linkedin",
+    "facebook",
+    "content-calendar",
+    "automation"
+  ],
+  "author": "creativecapitalcash",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.5.0"
+  }
+}
