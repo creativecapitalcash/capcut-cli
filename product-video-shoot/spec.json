@@ -1,0 +1,174 @@
+{
+  "name": "Product Video - Cinematic Shoot",
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "ratio": "9:16",
+  "tracks": [
+    {
+      "type": "video",
+      "name": "main-footage",
+      "items": [
+        {
+          "ref": "clip1",
+          "path": "../media/two-sisters-vietnam-short.mp4",
+          "start": 0,
+          "duration": 5,
+          "sourceStart": 0,
+          "speed": 0.8
+        },
+        {
+          "ref": "clip2",
+          "path": "../media/two-sisters-vietnam-short.mp4",
+          "start": 5,
+          "duration": 5,
+          "sourceStart": 5,
+          "speed": 0.7
+        },
+        {
+          "ref": "clip3",
+          "path": "../media/two-sisters-vietnam-short.mp4",
+          "start": 10,
+          "duration": 5,
+          "sourceStart": 2,
+          "speed": 0.9
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "hook-text",
+      "items": [
+        {
+          "ref": "hook",
+          "text": "YOU NEED THIS",
+          "start": 0.3,
+          "duration": 2.5,
+          "fontSize": 28,
+          "color": "#FFFFFF",
+          "y": 0.3
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "product-name",
+      "items": [
+        {
+          "ref": "product",
+          "text": "THE PRODUCT",
+          "start": 3,
+          "duration": 4,
+          "fontSize": 32,
+          "color": "#E8D5B7",
+          "y": 0.0
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "feature-text",
+      "items": [
+        {
+          "ref": "feature1",
+          "text": "Premium Quality",
+          "start": 5.5,
+          "duration": 2,
+          "fontSize": 18,
+          "color": "#FFFFFF",
+          "y": -0.5
+        },
+        {
+          "ref": "feature2",
+          "text": "Limited Edition",
+          "start": 8,
+          "duration": 2,
+          "fontSize": 18,
+          "color": "#FFFFFF",
+          "y": -0.5
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "cta-text",
+      "items": [
+        {
+          "ref": "cta",
+          "text": "SHOP NOW - Link in Bio",
+          "start": 11,
+          "duration": 4,
+          "fontSize": 16,
+          "color": "#FF6B35",
+          "y": -0.7
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "handle",
+      "items": [
+        {
+          "ref": "handle",
+          "text": "@creativecapital",
+          "start": 0,
+          "duration": 15,
+          "fontSize": 8,
+          "color": "#FFFFFF",
+          "x": -0.42,
+          "y": -0.85
+        }
+      ]
+    }
+  ],
+  "operations": [
+    { "op": "transition", "target": "clip2", "slug": "dissolve", "duration": 0.8 },
+    { "op": "transition", "target": "clip3", "slug": "dissolve", "duration": 0.8 },
+
+    { "op": "keyframe", "target": "clip1", "property": "scale_x", "time": 0, "value": 1.0 },
+    { "op": "keyframe", "target": "clip1", "property": "scale_x", "time": 5, "value": 1.15 },
+
+    { "op": "keyframe", "target": "clip2", "property": "scale_x", "time": 5, "value": 1.1 },
+    { "op": "keyframe", "target": "clip2", "property": "scale_x", "time": 10, "value": 1.0 },
+
+    { "op": "keyframe", "target": "clip3", "property": "position_x", "time": 10, "value": -0.02 },
+    { "op": "keyframe", "target": "clip3", "property": "position_x", "time": 15, "value": 0.02 },
+
+    {
+      "op": "text-style",
+      "target": "hook",
+      "style": {
+        "shadow": true,
+        "shadowAlpha": 0.9,
+        "shadowColor": "#000000",
+        "shadowDistance": 10,
+        "borderWidth": 0.08,
+        "borderColor": "#000000"
+      }
+    },
+    {
+      "op": "text-style",
+      "target": "product",
+      "style": {
+        "shadow": true,
+        "shadowAlpha": 0.8,
+        "shadowColor": "#1A1A2E",
+        "shadowDistance": 8,
+        "borderWidth": 0.06,
+        "borderColor": "#2D2D44"
+      }
+    },
+    {
+      "op": "text-style",
+      "target": "cta",
+      "style": {
+        "shadow": true,
+        "shadowAlpha": 0.7,
+        "shadowColor": "#000000",
+        "shadowDistance": 6,
+        "borderWidth": 0.05,
+        "borderColor": "#FFFFFF"
+      }
+    }
+  ]
+}
