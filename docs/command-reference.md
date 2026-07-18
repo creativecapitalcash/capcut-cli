@@ -53,6 +53,7 @@
 | `chroma` | `capcut chroma <project> <id> (--color <hex> \| --off) [options]` | yes | Green-screen / chroma key a video segment, or --off. |
 | `prune` | `capcut prune <project>` | yes | Remove materials no segment references. |
 | `relink` | `capcut relink <project> (--dir <path> \| --from <prefix> --to <prefix>)` | yes | Repair broken media paths (--dir or --from/--to). |
+| `replace-media` | `capcut replace-media <project> <segment-id> <new-file> [--retime]` | yes | Swap a segment's source file (placeholder > final) keeping its timing, effects, and keyframes. |
 | `timeline` | `capcut timeline <project> [--cols <number>]` | no | Show the track/segment layout (JSON, or -H ASCII bars). |
 | `projects` | `capcut projects [query] [--drafts <path>] [--names]` | no | List CapCut/JianYing draft folders on disk. |
 | `diff` | `capcut diff <project-a> <project-b>` | no | Compare two drafts (segments/materials/tracks added/removed/changed). |
@@ -63,10 +64,12 @@
 | `enums` | `capcut enums <category-flag> [--jianying]` | no | List enum slugs (transitions, masks, effects, ...) by category. |
 | `doctor` | `capcut doctor` | no | Environment preflight (Node, whisper, API key, project dir). |
 | `diagnose` | `capcut diagnose <project> [--bundle <report.json>]` | no | Inspect canonical draft files, divergence, and editor-write safety. |
+| `fixture` | `capcut fixture <project> --out <dir>` | no | Build a shareable, redacted compatibility bundle (timeline JSON only) for a version-support issue. |
 | `restore` | `capcut restore <project> [--step <number> \| --list]` | yes | Undo writes from .bak / snapshot history (--step N, --list). |
 | `serve` | `capcut serve [--queue <path>] [options]` | no | Run a stateless JSONL job queue from stdin/--queue. |
 | `decrypt` | `capcut decrypt <project-or-file>` | no | Detect JianYing 6.0+ encryption and explain the workaround. |
 | `export` | `capcut export <drafts-dir> --batch [options]` | yes | EXPERIMENTAL UI-automated render queue (macOS). |
 | `init` | `capcut init <name> [--template <dir>] [--drafts <dir>]` | yes | Create a new empty draft from a template. |
+| `quickstart` | `capcut quickstart <name> [--video <f>] [--audio <f>] [--srt <f>] [--drafts <dir>]` | yes | One-command first draft: create + add one input + lint + print the open-in-CapCut step. |
 | `compile` | `capcut compile <spec.json> [--out <draftdir>] [--check \| --plan]` | yes | Build a draft from a declarative JSON spec (the inverse of describe). |
 | `render` | `capcut render <project> [--out <preview.mp4>] [options]` | no | Render a low-res ffmpeg proxy preview (trim+speed+audio, --burn-captions); not CapCut's final render. |

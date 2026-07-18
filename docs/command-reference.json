@@ -1,6 +1,6 @@
 {
   "name": "capcut-cli",
-  "version": "0.11.3",
+  "version": "0.12.0",
   "schema_version": 2,
   "description": "Edit CapCut/JianYing draft_content.json directly. JSON in, JSON out.",
   "global_flags": [
@@ -3259,6 +3259,58 @@
       }
     },
     {
+      "name": "replace-media",
+      "summary": "Swap a segment's source file (placeholder > final) keeping its timing, effects, and keyframes.",
+      "usage": "capcut replace-media <project> <segment-id> <new-file> [--retime]",
+      "positionals": [
+        {
+          "name": "project",
+          "type": "path",
+          "required": true
+        },
+        {
+          "name": "segment-id",
+          "type": "id",
+          "required": true
+        },
+        {
+          "name": "new-file",
+          "type": "path",
+          "required": true
+        }
+      ],
+      "options": [
+        {
+          "name": "retime",
+          "flags": [
+            "--retime"
+          ],
+          "type": "boolean",
+          "required": false,
+          "description": "Fit the segment to the new clip instead of preserving in/out."
+        },
+        {
+          "name": "ffprobe_cmd",
+          "flags": [
+            "--ffprobe-cmd"
+          ],
+          "type": "path",
+          "required": false,
+          "description": "ffprobe binary for duration/dimension detection."
+        }
+      ],
+      "mutates": true,
+      "prerequisites": [],
+      "output": {
+        "type": "object",
+        "description": "JSON by default; use -H where supported for human output."
+      },
+      "exit_codes": {
+        "0": "success",
+        "1": "invalid input, warning, or operation failure"
+      }
+    },
+    {
       "name": "timeline",
       "summary": "Show the track/segment layout (JSON, or -H ASCII bars).",
       "usage": "capcut timeline <project> [--cols <number>]",
@@ -3545,6 +3597,39 @@
       }
     },
     {
+      "name": "fixture",
+      "summary": "Build a shareable, redacted compatibility bundle (timeline JSON only) for a version-support issue.",
+      "usage": "capcut fixture <project> --out <dir>",
+      "positionals": [
+        {
+          "name": "project",
+          "type": "path",
+          "required": true
+        }
+      ],
+      "options": [
+        {
+          "name": "out",
+          "flags": [
+            "--out"
+          ],
+          "type": "path",
+          "required": false,
+          "description": "Output directory for the sanitized bundle."
+        }
+      ],
+      "mutates": false,
+      "prerequisites": [],
+      "output": {
+        "type": "object",
+        "description": "JSON by default; use -H where supported for human output."
+      },
+      "exit_codes": {
+        "0": "success",
+        "1": "invalid input, warning, or operation failure"
+      }
+    },
+    {
       "name": "restore",
       "summary": "Undo writes from .bak / snapshot history (--step N, --list).",
       "usage": "capcut restore <project> [--step <number> | --list]",
@@ -3782,6 +3867,94 @@
           "type": "path",
           "required": false,
           "description": "Draft root directory."
+        }
+      ],
+      "mutates": true,
+      "prerequisites": [],
+      "output": {
+        "type": "object",
+        "description": "JSON by default; use -H where supported for human output."
+      },
+      "exit_codes": {
+        "0": "success",
+        "1": "invalid input, warning, or operation failure"
+      }
+    },
+    {
+      "name": "quickstart",
+      "summary": "One-command first draft: create + add one input + lint + print the open-in-CapCut step.",
+      "usage": "capcut quickstart <name> [--video <f>] [--audio <f>] [--srt <f>] [--drafts <dir>]",
+      "positionals": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "f",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "dir",
+          "type": "path",
+          "required": false
+        }
+      ],
+      "options": [
+        {
+          "name": "video",
+          "flags": [
+            "--video"
+          ],
+          "type": "path",
+          "required": false,
+          "description": "Video or image to add."
+        },
+        {
+          "name": "audio",
+          "flags": [
+            "--audio"
+          ],
+          "type": "path",
+          "required": false,
+          "description": "Audio file to add."
+        },
+        {
+          "name": "srt",
+          "flags": [
+            "--srt"
+          ],
+          "type": "path",
+          "required": false,
+          "description": "SRT subtitles to add as caption segments."
+        },
+        {
+          "name": "drafts",
+          "flags": [
+            "--drafts"
+          ],
+          "type": "path",
+          "required": false,
+          "description": "Draft root directory."
+        },
+        {
+          "name": "template",
+          "flags": [
+            "--template"
+          ],
+          "type": "path",
+          "required": false,
+          "description": "Template directory."
+        },
+        {
+          "name": "ffprobe_cmd",
+          "flags": [
+            "--ffprobe-cmd"
+          ],
+          "type": "path",
+          "required": false,
+          "description": "ffprobe binary for duration detection."
         }
       ],
       "mutates": true,
