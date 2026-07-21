@@ -6,6 +6,7 @@ All notable changes to capcut-cli are documented here. The format follows [Keep 
 
 ### Added
 
+- `add-broll <project> <file-or-url> <start> <duration>` — add video/image footage meant to cover another video track (a talking-head take, a screen recording) instead of sit on the primary track. Same file/probe/Wikimedia handling as `add-video`; two defaults differ: the clip's own volume defaults to `0` (muted, so the covered track's narration keeps playing) and, on the default `"b-roll"` track name, that track is kept promoted above every other video track even if more video is added afterward (a custom `--track-name` opts out and falls back to normal call-order z-stacking). Response includes `covers_track: false` as a warning when there's no other video track yet to cover.
 - `lint <project> --fix` — auto-repair mechanically-fixable draft defects (`cue-too-long`, `caption-overlap`). Trims over-long captions to the configured cap and shortens overlapping caption pairs so each ends where the next begins. Writes atomically with a `.bak` snapshot; combine with `--dry-run` to preview without touching the draft. Non-fixable issues (`missing-material`, `missing-file`, `line-too-long`, `caption-gap-too-small`) are still reported and continue to drive the exit code. Closes #40.
 
 ## [0.12.0] — 2026-06-27

@@ -138,6 +138,7 @@ const usages = {
   material: "capcut material <project> <id>",
   "add-audio": "capcut add-audio <project> <file-or-url> <start> [duration] [options]",
   "add-video": "capcut add-video <project> <file-or-url> <start> [duration] [options]",
+  "add-broll": "capcut add-broll <project> <file-or-url> <start> [duration] [options]",
   "add-text": "capcut add-text <project> <start> <duration> <text> [options]",
   cut: "capcut cut <project> <start> <end> --out <path>",
   keyframe: "capcut keyframe <project> <id> <property> <time> <value> | --batch",
@@ -214,6 +215,15 @@ const optionsByCommand: Record<string, OptionSpec[]> = {
   ],
   "add-video": [
     TRACK_NAME,
+    option("width", ["--width"], "number", "Source width."),
+    option("height", ["--height"], "number", "Source height."),
+    option("force_license", ["--force-license"], "boolean", "Allow restrictive or unknown Wikimedia licenses."),
+    option("no_probe", ["--no-probe"], "boolean", "Disable automatic media probing."),
+    FFPROBE,
+  ],
+  "add-broll": [
+    TRACK_NAME,
+    option("volume", ["--volume"], "number", "B-roll clip's own volume.", { default: 0 }),
     option("width", ["--width"], "number", "Source width."),
     option("height", ["--height"], "number", "Source height."),
     option("force_license", ["--force-license"], "boolean", "Allow restrictive or unknown Wikimedia licenses."),
@@ -397,6 +407,7 @@ const mutating = new Set([
   "opacity",
   "add-audio",
   "add-video",
+  "add-broll",
   "add-text",
   "cut",
   "keyframe",
@@ -473,10 +484,10 @@ export function buildCommandSpecs(commands: readonly string[], summaries: Record
     const usage = usages[name as CommandName] ?? `capcut ${name} <project>`;
     const prerequisites: string[] = [];
     if (name === "render") prerequisites.push("ffmpeg");
-    if (["add-video", "add-audio", "compile"].includes(name)) prerequisites.push("ffprobe (optional)");
+    if (["add-video", "add-broll", "add-audio", "compile"].includes(name)) prerequisites.push("ffprobe (optional)");
     if (name === "caption") prerequisites.push("whisper CLI");
     if (name === "translate") prerequisites.push("ANTHROPIC_API_KEY or --api-key");
-    if (["add-video", "add-audio"].includes(name)) prerequisites.push("network for Wikimedia URLs only");
+    if (["add-video", "add-broll", "add-audio"].includes(name)) prerequisites.push("network for Wikimedia URLs only");
     const exitCodes: Record<string, string> = { "0": "success", "1": "invalid input, warning, or operation failure" };
     if (name === "lint") exitCodes["2"] = "lint errors";
     if (name === "decrypt") exitCodes["2"] = "encrypted draft detected";

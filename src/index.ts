@@ -59,6 +59,7 @@ import { exportBatch } from "./export-batch.js";
 import type { AddAudioOptions, AddTextOptions, AddVideoOptions, CutOptions } from "./factory.js";
 import {
   addAudio,
+  addBRoll,
   addEffect,
   addFilter,
   addSticker,
@@ -114,6 +115,7 @@ export const COMMANDS = [
   "material",
   "add-audio",
   "add-video",
+  "add-broll",
   "add-text",
   "cut",
   "keyframe",
@@ -251,6 +253,23 @@ Add:
              add-audio). Type auto-detected from extension.
              Options:
                --track-name <s>   Track name (default: "video")
+               --width <n>        Source width in px (default: auto-probed via
+                                  ffprobe, else 1920)
+               --height <n>       Source height in px (default: auto-probed via
+                                  ffprobe, else 1080)
+               --force-license    Bypass refusal on restrictive/unknown license
+
+  add-broll  <project> <file-or-wikimedia-url> <start> <duration> [options]
+             Add a video or image segment as b-roll to cover another video
+             track (e.g. a talking-head take): its own audio is muted by
+             default so the covered track's narration keeps playing, and
+             (on the default "b-roll" track name only) it stays promoted
+             above every other video track even if more video is added
+             afterward. A custom --track-name falls back to normal
+             call-order z-stacking. Same file/probe handling as add-video.
+             Options:
+               --track-name <s>   Track name (default: "b-roll")
+               --volume <n>       Volume 0.0-1.0 (default: 0, muted)
                --width <n>        Source width in px (default: auto-probed via
                                   ffprobe, else 1920)
                --height <n>       Source height in px (default: auto-probed via
@@ -1451,6 +1470,88 @@ async function cmdAddVideo(draft: Draft, filePath: string, positional: string[],
     };
   }
   const warnings = [warning, dimensionWarning].filter(Boolean);
+  if (warnings.length) payload.warning = warnings.join(" ");
+  out(payload, flags);
+}
+
+async function cmdAddBroll(draft: Draft, filePath: string, positional: string[], flags: Flags): Promise<void> {
+  const videoPath = positional[2];
+  const startStr = positional[3];
+  const durationStr = positional[4];
+  if (!videoPath || !startStr) die("Usage: capcut add-broll <project> <file-or-wikimedia-url> <start> [duration]");
+  const { localPath, asset, warning } = await resolveAssetPath(videoPath, filePath, "video", flags.forceLicense);
+  const absPath = path.resolve(localPath);
+  const start = parseTimeInput(startStr);
+  const extension = path.extname(absPath).slice(1).toLowerCase();
+  const isPhoto = ["jpg", "jpeg", "png", "webp", "bmp", "tiff"].includes(extension);
+  const media = flags.noProbe ? null : probeMedia(absPath, flags.ffprobeCmd);
+  const duration = durationStr ? parseTimeInput(durationStr) : isPhoto ? undefined : media?.durationUs;
+  if (!duration || duration <= 0) {
+    die("Video duration was omitted and ffprobe could not determine it. Photos still require an explicit duration.");
+  }
+  if (!isPhoto && durationStr && media?.durationUs && duration > media.durationUs + 10_000) {
+    die(`Requested duration ${duration}us exceeds source duration ${media.durationUs}us.`);
+  }
+
+  let width = flags.width;
+  let height = flags.height;
+  let dimensionSource = width && height ? "flags" : "default";
+  let dimensionWarning: string | undefined;
+  if (!(width && height)) {
+    if (media?.width && media.height) {
+      width = media.width;
+      height = media.height;
+      dimensionSource = "ffprobe";
+    } else {
+      dimensionWarning =
+        "Could not detect dimensions (ffprobe unavailable or failed); defaulted to 1920x1080. Pass --width/--height to override.";
+    }
+  }
+
+  const opts: AddVideoOptions = {
+    path: absPath,
+    start,
+    duration,
+    trackName: flags.trackName,
+    width,
+    height,
+    volume: flags.volume,
+  };
+  const result = addBRoll(draft, filePath, opts);
+  saveDraft(filePath, draft);
+  const payload: Record<string, unknown> = {
+    ok: true,
+    segment_id: result.segmentId,
+    material_id: result.materialId,
+    track_id: result.trackId,
+    path: absPath,
+    start_us: start,
+    duration_us: duration,
+    duration_source: durationStr ? "argument" : "ffprobe",
+    width: width ?? 1920,
+    height: height ?? 1080,
+    dimension_source: dimensionSource,
+    volume: opts.volume ?? 0,
+    covers_track: result.coversTrack,
+    media_probe: media,
+  };
+  if (asset) {
+    payload.wikimedia = {
+      file_title: asset.fileTitle,
+      license: asset.license.raw,
+      license_class: asset.license.class,
+      artist: asset.license.artist,
+      credit: asset.license.credit,
+      description_url: asset.descriptionUrl,
+      width: asset.width,
+      height: asset.height,
+      mime: asset.mime,
+    };
+  }
+  const warnings = [warning, dimensionWarning].filter(Boolean);
+  if (!result.coversTrack) {
+    warnings.push("No existing video track found to cover; this b-roll is the only video track so far.");
+  }
   if (warnings.length) payload.warning = warnings.join(" ");
   out(payload, flags);
 }
@@ -2662,6 +2763,7 @@ const SUMMARIES: Record<string, string> = {
   material: "Full detail for one material.",
   "add-audio": "Add a local or Wikimedia audio file on an audio track.",
   "add-video": "Add a local or Wikimedia video/image on a video track.",
+  "add-broll": "Add a video/image that always renders above every other video track, muted by default.",
   "add-text": "Add a text segment with font/color/position options.",
   cut: "Extract a time range into a new standalone draft.",
   keyframe: "Add a keyframe (position/scale/rotation/alpha/volume); single or --batch.",
@@ -3292,6 +3394,10 @@ async function main(): Promise<void> {
     case "add-video":
       requireArgs(positional, 4, "capcut add-video <project> <file-or-wikimedia-url> <start> [duration]");
       await cmdAddVideo(draft, filePath, positional, flags);
+      break;
+    case "add-broll":
+      requireArgs(positional, 4, "capcut add-broll <project> <file-or-wikimedia-url> <start> [duration]");
+      await cmdAddBroll(draft, filePath, positional, flags);
       break;
     case "add-text":
       requireArgs(positional, 5, "capcut add-text <project> <start> <duration> <text>");

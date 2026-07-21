@@ -143,6 +143,24 @@ the requested target duration for images.
 |---|---|---|
 | `--track-name <s>` | `"video"` | Target video track name; creates on demand. |
 
+### `capcut add-broll <project> <file> <start> <duration> [flags]`
+
+Same as `add-video`, for footage meant to *cover* another video track (a
+talking-head take, a screen recording) instead of sit on the primary track.
+Two defaults differ: the segment's own volume defaults to `0` (muted, so the
+covered track's narration keeps playing), and — only when writing to the
+default `"b-roll"` track name — that track stays promoted to the topmost
+position among video tracks even if more video is added afterward. A custom
+`--track-name` opts out of that promotion and falls back to normal
+call-order z-stacking (create it last if you want it on top). Response
+includes `covers_track: false` as a warning when no other video track exists
+yet (nothing to cover).
+
+| Flag | Default | Effect |
+|---|---|---|
+| `--track-name <s>` | `"b-roll"` | Target video track name; creates on demand. |
+| `--volume <n>` | `0` | 0.0–1.0; b-roll's own audio (0 = muted). |
+
 ### `capcut add-text <project> <start> <duration> <text> [flags]`
 
 Adds a text segment with default styling.

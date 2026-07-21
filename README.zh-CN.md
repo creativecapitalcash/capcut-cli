@@ -54,7 +54,7 @@ capcut info ./my-first/                         # 查看草稿（加 -H 显示�
 | **浏览 / 下钻** | `segments` · `texts` · `segment` · `material` |
 | **创建** | `init` · `quickstart` · `compile`（用 JSON spec 构建草稿）|
 | **预览** | `render`（低清 ffmpeg 代理预览 —— 非 CapCut 最终渲染）|
-| **添加** | `add-video` · `add-audio` · `add-text`（支持 Wikimedia URL，自动校验授权）|
+| **添加** | `add-video` · `add-broll` · `add-audio` · `add-text`（支持 Wikimedia URL，自动校验授权）|
 | **编辑 / 动画** | 裁剪 · 变速 · 音量 · 转场 · 蒙版 · 文字/图片动画 |
 | **模板** | 应用与提取可复用版式 |
 | **字幕 / 多语言** | `caption` · `import-srt` · `translate`（多语言草稿克隆）|

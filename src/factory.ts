@@ -658,6 +658,7 @@ export interface AddVideoOptions {
   width?: number; // default 1920
   height?: number; // default 1080
   trackName?: string; // default "video"
+  volume?: number; // 0.0-1.0, default: 1.0 (segment volume unset = full)
 }
 
 export function addVideo(
@@ -760,6 +761,7 @@ export function addVideo(
   // Create segment
   const timerange: Timerange = { start: opts.start, duration: opts.duration };
   const seg = baseSegment(segId, matId, track.id, timerange, companions.ids, 14000);
+  if (opts.volume !== undefined) seg.volume = opts.volume;
   track.segments.push(seg);
 
   // Update project duration if needed
@@ -768,7 +770,57 @@ export function addVideo(
     draft.duration = segEnd;
   }
 
+  promoteBRollTrack(draft);
+
   return { segmentId: segId, materialId: matId, trackId: track.id };
+}
+
+// The default track addBRoll writes to. Kept in one place so promoteBRollTrack
+// (below) and addBRoll agree on which track name gets the "always on top"
+// treatment.
+const BROLL_TRACK_NAME = "b-roll";
+
+// Track order (and therefore z-order — see draft.ts sortTracks) is otherwise
+// call-order: whichever video track was created first stays on the bottom.
+// B-roll footage exists specifically to cover whatever else is on the
+// timeline, so re-float the b-roll track to the top of the video stack after
+// every addVideo call — including ones that ran after the b-roll was added.
+// Scoped to the exact default track name: a custom --track-name opts out of
+// this and falls back to plain call-order semantics.
+function promoteBRollTrack(draft: Draft): void {
+  const brollIndex = draft.tracks.findIndex((t) => t.type === "video" && t.name === BROLL_TRACK_NAME);
+  if (brollIndex === -1) return;
+  const [brollTrack] = draft.tracks.splice(brollIndex, 1);
+  const lastVideoIndex = draft.tracks.reduce((last, t, i) => (t.type === "video" ? i : last), -1);
+  draft.tracks.splice(lastVideoIndex + 1, 0, brollTrack);
+}
+
+// --- B-roll (overlay video/image, always the topmost video layer) ---
+
+export interface AddBRollOptions extends AddVideoOptions {}
+
+/**
+ * Same as addVideo, for footage meant to cover another video track (a
+ * talking-head take, screen recording, etc.) rather than sit on the primary
+ * track itself. Two defaults differ from addVideo:
+ *   - volume defaults to 0 (muted) so the covered track's narration keeps
+ *     playing underneath instead of being fought over by the b-roll's own audio.
+ *   - when writing to the default "b-roll" track name, that track is kept
+ *     promoted to the topmost position among video tracks by every
+ *     subsequent addVideo/addBRoll call (see promoteBRollTrack above).
+ */
+export function addBRoll(
+  draft: Draft,
+  filePath: string,
+  opts: AddBRollOptions,
+): { segmentId: string; materialId: string; trackId: string; coversTrack: boolean } {
+  const coversTrack = draft.tracks.some((t) => t.type === "video");
+  const result = addVideo(draft, filePath, {
+    ...opts,
+    trackName: opts.trackName ?? BROLL_TRACK_NAME,
+    volume: opts.volume ?? 0,
+  });
+  return { ...result, coversTrack };
 }
 
 // --- Cut (extract time range) ---
